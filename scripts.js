@@ -1,3 +1,7 @@
+// $(document).ready(function(){
+// 	initMap();
+// })
+
 // console.log("sanity check");
 console.log(cities);
 // initMap is essentially our docuemnt.ready
@@ -9,16 +13,60 @@ function initMap(){
 		lng: -98.0000
 	};
 	// Init the map to load at geoCenter, zoom 4
-	var map = new google.maps.Map(document.getElementById('map'),{
-		zoom: 4,
-		center: myLatlng
-	});
+	var map = new google.maps.Map(document.getElementById('map'),
+		{
+			zoom: 4,
+			center: myLatlng
+		}
+	);
 	// markers array
 	var markers = [];
 	// global infoWindow for everyone to share
 	var infoWindow = new google.maps.InfoWindow({});
 	// loop through the cities array which is in cities.js
+	var listHTML = '';
 	cities.map((city)=>{
+		createMarker(city);
+		listHTML += addCityToList(city);
+	});
+	$('#cities-table tbody').html(listHTML);
+
+	// Add submit listener to the form
+	$('#filter-form').submit(function(event){
+		// wipe out all the markers
+		markers.map((marker)=>{
+			marker.setMap(null);
+		});
+
+
+		event.preventDefault();
+		// user submitted the input box
+		// console.log("User submission!");
+		var userSearch = $('#filter-input').val().toLowerCase();
+		listHTML = '';
+		cities.map((city)=>{
+			var cityName = city.city.toLowerCase();
+			if(cityName.indexOf(userSearch) > -1){
+				// The city we are on, contains the search text the user entered
+				createMarker(city);
+				listHTML += addCityToList(city);
+			}
+		});
+		$('#cities-table tbody').html(listHTML);
+
+	});
+
+	function addCityToList(city){
+		var newHTML = '<tr>';
+			newHTML += `<td class="city-name">${city.city}</td>`; 
+			newHTML += `<td class="city-state">${city.state}</td>`;
+			newHTML += `<td class="city-directions"><button class="btn btn-primary">Get Directions</button></td>`;
+			newHTML += `<td class="city-zoom"><button class="btn btn-success">Zoom to city</button></td>`;
+		newHTML += '</tr>'
+		return newHTML;			
+	}
+
+	function createMarker(city){
 		// console.log(city);
 		// set up an object with this cities lat/lon
 		var cityLL = {
@@ -49,7 +97,9 @@ function initMap(){
 			// 2. Where to put the infoWindow on teh map
 			infoWindow.open(map, marker);
 		})
-	});
+		markers.push(marker);
+	}
+
 };
 
 
